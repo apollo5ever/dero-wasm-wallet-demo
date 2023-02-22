@@ -57,7 +57,7 @@ const Sc = () => {
 
     return(<div>
 <button onClick={()=>{execute()}}>Execute</button>
-<button onClick={()=>{console.log(window["sent"])}}>Log</button>
+
 </div>
     );
 }; 

@@ -1,6 +1,7 @@
 import React, { useState,useContext } from "react";
 import { LoginContext } from "./LoginContext";
 import initialize from "./initialize";
+import Info from "./info";
 
 
 const WalletMenu = ({handleClose}) => {
@@ -16,12 +17,16 @@ const WalletMenu = ({handleClose}) => {
   const handleSubmitSeed = async (e) => {
     
         e.preventDefault()
+        
+        let name =e.target.name.value
         let pass = e.target.pass.value
+        let conf = e.target.conf.value
         let seed = e.target.seed.value
+        if(pass!=conf) return
         console.log(state)
         if(!state.initialized){
           const init = await initialize()
-   await setState({...state,"initialized":init})
+   }
      console.log(state)
      const walletInfo = window.RecoverWalletFromSeed(pass,seed)
      const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
@@ -34,28 +39,16 @@ const WalletMenu = ({handleClose}) => {
      console.log(err)
      console.log(walletInfo)
 
-     setState({...state,"walletInfo":walletInfo})
-        }
-        
-
-      
-        if (state.initialized) {
+     let wallet = walletInfo.value
+     wallet.name=name
+       if(!state.walletList){
+         setState({...state,"initialized":true,"walletList":[wallet]})
+       }else{
+         setState({...state,"initialized":true,"walletList":[...state.walletList,wallet]})
          
-          const walletInfo = window.RecoverWalletFromSeed(pass,seed)
-        const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
-        const decoder = new TextDecoder();
-        const jsonString = decoder.decode(arrayBuffer);
-        const jsonObject = JSON.parse(jsonString);
-        const fileData=JSON.stringify(jsonObject)
-    
-        let err=  window.OpenWallet(walletInfo.value.hexSeed,pass,fileData,true)
-        console.log(err)
-        console.log(walletInfo)
-
-        setState({...state,"walletInfo":walletInfo})
-
-        }
-     
+       }
+        
+        
        
     
     
@@ -64,12 +57,16 @@ const WalletMenu = ({handleClose}) => {
 const handleSubmitHexSeed = async (e) => {
     
   e.preventDefault()
+  let name = e.target.name.value
   let pass = e.target.pass.value
+  let conf = e.target.conf.value
   let seed = e.target.seed.value
+  if(pass!=conf) return
   console.log(state)
   if(!state.initialized){
     const init = await initialize()
-await setState({...state,"initialized":init})
+  }
+
 console.log(state)
 const walletInfo = window.RecoverWalletFromHexSeed(pass,seed)
 const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
@@ -82,27 +79,19 @@ let err=  window.OpenWallet(walletInfo.value.hexSeed,pass,fileData,true)
 console.log(err)
 console.log(walletInfo)
 
-setState({...state,"walletInfo":walletInfo})
+let wallet = walletInfo.value
+wallet.name=name
+  if(!state.walletList){
+    setState({...state,"initialized":true,"walletList":[wallet]})
+  }else{
+    setState({...state,"initialized":true,"walletList":[...state.walletList,wallet]})
+    
   }
+  
   
 
 
-  if (state.initialized) {
-   
-    const walletInfo = window.RecoverWalletFromHexSeed(pass,seed)
-  const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
-  const decoder = new TextDecoder();
-  const jsonString = decoder.decode(arrayBuffer);
-  const jsonObject = JSON.parse(jsonString);
-  const fileData=JSON.stringify(jsonObject)
-
-  let err=  window.OpenWallet(walletInfo.value.hexSeed,pass,fileData,true)
-  console.log(err)
-  console.log(walletInfo)
-
-  setState({...state,"walletInfo":walletInfo})
-
-  }
+ 
 
  
 
@@ -113,30 +102,33 @@ const handleSubmitCreateNewWallet = async (e) => {
     
   e.preventDefault()
   let pass = e.target.pass.value
+  let conf = e.target.conf.value
+  let name = e.target.name.value
   console.log(state)
   if(!state.initialized){
     const init = await initialize()
 
-console.log("state",state)
-const walletInfo = window.CreateNewWallet(pass)
-const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
-const decoder = new TextDecoder();
-const jsonString = decoder.decode(arrayBuffer);
-const jsonObject = JSON.parse(jsonString);
-const fileData=JSON.stringify(jsonObject)
+// console.log("state",state)
+// const walletInfo = window.CreateNewWallet(pass)
+// const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
+// const decoder = new TextDecoder();
+// const jsonString = decoder.decode(arrayBuffer);
+// const jsonObject = JSON.parse(jsonString);
+// const fileData=JSON.stringify(jsonObject)
 
-let err=  window.OpenWallet(walletInfo.value.hexSeed,pass,fileData,true)
-console.log(err)
-console.log(walletInfo)
+// let err=  window.OpenWallet(walletInfo.value.hexSeed,pass,fileData,true)
+// console.log(err)
+// console.log(walletInfo)
 
-setState({...state,"walletInfo":walletInfo,"initialized":init})
+// setState({...state,"walletInfo":walletInfo,"initialized":init})
   }
   
 
 
-  if (state.initialized) {
+  if (pass === conf) {
    
     const walletInfo = window.CreateNewWallet(pass)
+    
   const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
   const decoder = new TextDecoder();
   const jsonString = decoder.decode(arrayBuffer);
@@ -146,8 +138,15 @@ setState({...state,"walletInfo":walletInfo,"initialized":init})
   let err=  window.OpenWallet(walletInfo.value.hexSeed,pass,fileData,true)
   console.log(err)
   console.log(walletInfo)
-
-  setState({...state,"walletInfo":walletInfo})
+  let wallet = walletInfo.value
+  wallet.name=name
+    if(!state.walletList){
+      setState({...state,"initialized":true,"walletList":[wallet]})
+    }else{
+      setState({...state,"initialized":true,"walletList":[...state.walletList,wallet]})
+      
+    }
+  
 
   }
 
@@ -160,14 +159,15 @@ const handleSubmitDisk = async (e) => {
     
   e.preventDefault()
   console.log(e.target.file.value)
+  let name = e.target.name.value
   let pass = e.target.pass.value
   let file = await e.target.file.files[0].text()
-
+  
   
   
   if(!state.initialized){
     const init = await initialize()
-await setState({...state,"initialized":init})
+}
 console.log(state)
 const walletInfo = window.RecoverWalletFromDisk(pass,file)
 const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
@@ -180,27 +180,18 @@ let err=  window.OpenWallet(walletInfo.value.hexSeed,pass,fileData,true)
 console.log(err)
 console.log(walletInfo)
 
-setState({...state,"walletInfo":walletInfo})
+let wallet = walletInfo.value
+wallet.name=name
+  if(!state.walletList){
+    setState({...state,"initialized":true,"walletList":[wallet]})
+  }else{
+    setState({...state,"initialized":true,"walletList":[...state.walletList,wallet]})
+    
   }
   
+  
 
-
-  if (state.initialized) {
-   
-    const walletInfo = window.RecoverWalletFromDisk(pass,file)
-  const arrayBuffer = new Uint8Array(walletInfo.value.fileData).slice();
-  const decoder = new TextDecoder();
-  const jsonString = decoder.decode(arrayBuffer);
-  const jsonObject = JSON.parse(jsonString);
-  const fileData=JSON.stringify(jsonObject)
-
-  let err=  window.OpenWallet(walletInfo.value.hexSeed,pass,fileData,true)
-  console.log(err)
-  console.log(walletInfo)
-
-  setState({...state,"walletInfo":walletInfo})
-
-  }
+  
 
  
 
@@ -213,6 +204,7 @@ const renderMainMenu = () =>{
       <button onClick={()=>handleClose()}>X</button>
       <div><h3>RPC Wallet</h3></div>
       <div><h3>Integrated Wallets</h3>
+      <Info/>
       <button onClick={()=>handleOptionClick("addWallet")}>Add Wallet</button></div>
     </div>
   )
@@ -251,28 +243,31 @@ const renderMainMenu = () =>{
         return <input type="text" placeholder="Enter your email"></input>;
       case "Create New Wallet":
         return <form onSubmit={handleSubmitCreateNewWallet}>
-          {state&&JSON.stringify(state)}
+          <input type="text" placeholder="Name your new wallet" id="name"/>
           <input type="password" placeholder="Enter a password" id="pass"/>
-          <button type={"submit"}>Submit</button>
+          <input type="password" placeholder="Confirm password" id="conf"/>
+          <button type={"submit"}>Create</button>
           </form>;
       case "Recover From Seed":
         return <form onSubmit={handleSubmitSeed}>
-        <p>Seed</p>
+        <input type="text" id="name" placeholder="Name your wallet"/>
         <input type="text" name="" id="seed" placeholder="Enter your seed phrase"/>
-        
         <input type="password" id="pass" placeholder="Enter a password"/>
+        <input type="password" id="conf" placeholder="Confirm password"/>
         <button type={"submit"}>Submit</button>
       </form>;
       case "Recover From Hex Seed":
         return <form onSubmit={handleSubmitHexSeed}>
-        
+        <input type="text" id="name" placeholder="Name your wallet"/>
         <input type="text" name="" id="seed" placeholder="Enter your hex seed"/>
-        <p>Password</p>
+        
         <input type="password" id="pass" placeholder="Enter a password"/>
+        <input type="password" id="conf" placeholder="Confirm password"/>
         <button type={"submit"}>Submit</button>
       </form>;
       case "Recover From Disk":
         return <form onSubmit={handleSubmitDisk}>
+          <input type="text" id="name" placeholder="Name your wallet"/>
           <input type="password" id="pass" placeholder="Enter password"/>
           <input type="file" id="file"/>
           <button type={"submit"}>Submit</button>

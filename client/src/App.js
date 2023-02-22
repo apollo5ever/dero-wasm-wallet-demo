@@ -49,7 +49,7 @@ class App extends Component {
     return (
       <div className="App"> 
       <PopUpMenu/>
-      <Info/>
+      
       <Sc/>
       
         
